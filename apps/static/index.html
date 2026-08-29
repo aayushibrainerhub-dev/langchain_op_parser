@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bella Italia - Table Reservation Assistant</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-color: #f59e0b; /* Amber gold */
+            --primary-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-success: #10b981;
+            --text-error: #ef4444;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(245, 158, 11, 0.05) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        header {
+            flex-shrink: 0;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 10;
+        }
+
+        .logo-area h1 {
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            background: linear-gradient(to right, #f59e0b, #fef08a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-area span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-left: 2.3rem;
+            display: block;
+        }
+
+        .demo-badge {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: var(--primary-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            padding: 2rem;
+            gap: 2rem;
+            height: calc(100vh - 90px);
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .left-col {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            overflow: hidden;
+            height: 100%;
+            position: relative;
+        }
+
+        .right-col {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            perspective: 1000px; /* For card flip animations */
+        }
+
+        /* Chat Panel */
+        .chat-header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .host-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .chat-header-info h2 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .chat-header-info p {
+            font-size: 0.75rem;
+            color: var(--text-success);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        /* Custom Scrollbar */
+        .chat-messages::-webkit-scrollbar,
+        .ticket-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-track,
+        .ticket-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-messages::-webkit-scrollbar-thumb,
+        .ticket-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .msg-bubble {
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .assistant .msg-bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom-left-radius: 4px;
+            color: var(--text-main);
+        }
+
+        .user .msg-bubble {
+            background: var(--primary-gradient);
+            color: #0b0f19;
+            font-weight: 500;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .msg-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            align-self: flex-start;
+        }
+
+        .user .msg-time {
+            align-self: flex-end;
+        }
+
+        .chat-input-area {
+            padding: 1.2rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .input-wrapper {
+            display: flex;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.4rem;
+            transition: var(--transition);
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .input-wrapper input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            background: var(--primary-gradient);
+            color: #0b0f19;
+            border: none;
+            outline: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Right Panel - Booking Ticket Dashboard */
+        .card-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-container.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .dashboard-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Ticket Front Style */
+        .ticket-header {
+            padding: 1.5rem;
+            border-bottom: 2px dashed var(--border-color);
+            background: rgba(255, 255, 255, 0.01);
+            position: relative;
+            text-align: center;
+        }
+
+        /* Ticket notches */
+        .ticket-header::before,
+        .ticket-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            z-index: 5;
+        }
+        .ticket-header::before { left: -11px; border-right: 1px solid var(--border-color); }
+        .ticket-header::after { right: -11px; border-left: 1px solid var(--border-color); }
+
+        .ticket-title {
+            font-family: var(--font-serif);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .ticket-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .ticket-body {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .ticket-row {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Status colors */
+        .ticket-row.missing {
+            border-left: 3px solid #6b7280;
+        }
+        .ticket-row.valid {
+            border-left: 3px solid var(--text-success);
+            background: rgba(16, 185, 129, 0.02);
+        }
+        .ticket-row.invalid {
+            border-left: 3px solid var(--text-error);
+            background: rgba(239, 68, 68, 0.03);
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        .row-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .row-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .missing .status-badge {
+            background: rgba(107, 114, 128, 0.15);
+            color: #9ca3af;
+        }
+        .valid .status-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--text-success);
+        }
+        .invalid .status-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--text-error);
+        }
+
+        .row-val {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .missing .row-val {
+            color: rgba(255, 255, 255, 0.25);
+            font-style: italic;
+            font-weight: 400;
+            font-size: 0.95rem;
+        }
+
+        .row-error-msg {
+            font-size: 0.75rem;
+            color: var(--text-error);
+            margin-top: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Extraction pipeline log visualizer */
+        .pipeline-visualizer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+            font-family: monospace;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .visualizer-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .pipeline-step.active {
+            color: var(--text-main);
+        }
+        
+        .pipeline-step.success {
+            color: var(--text-success);
+        }
+
+        .pipeline-step.error {
+            color: var(--text-error);
+        }
+
+        .pipeline-step i {
+            width: 12px;
+            text-align: center;
+        }
+
+        /* Ticket Back Style (Finalized Reservation) */
+        .receipt-card {
+            transform: rotateY(180deg);
+            background: radial-gradient(circle at top left, #1c1917, #0c0a09); /* Luxury brown/black gradient */
+            border: 2px solid var(--primary-color);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(245, 158, 11, 0.15);
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem 2rem;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .receipt-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+
+        .receipt-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .receipt-subtitle {
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            font-weight: bold;
+        }
+
+        .receipt-details {
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .receipt-detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .receipt-detail-label {
+            color: var(--text-muted);
+        }
+
+        .receipt-detail-val {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .confirmation-code-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--primary-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+        }
+
+        .buon-appetito {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+        }
+
+        /* Loading spinner */
+        .agent-typing-indicator {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            display: none;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: dotWave 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotWave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1><i class="fa-solid fa-utensils"></i> BELLA ITALIA</h1>
+            <span>Authentic Italian Dining</span>
+        </div>
+        <div class="demo-badge">Phase 3: Structured Output Demo</div>
+    </header>
+
+    <main>
+        <!-- Left Side: Chat Workspace -->
+        <section class="left-col">
+            <div class="chat-header">
+                <div class="host-avatar">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="chat-header-info">
+                    <h2>Mario</h2>
+                    <p><i class="fa-solid fa-circle"></i> Booking Concierge</p>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be injected here by JS -->
+                <div class="message assistant">
+                    <div class="msg-bubble">
+                        Hello! Welcome to Bella Italia. I'd be delighted to help you book a table. Can I start with your name and how many guests will be joining us?
+                    </div>
+                    <span class="msg-time">Concierge • Just now</span>
+                </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="agent-typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+
+            <div class="chat-input-area">
+                <form id="chatForm">
+                    <div class="input-wrapper">
+                        <input type="text" id="userInput" placeholder="Send a message to Mario..." autocomplete="off" required>
+                        <button type="submit" class="send-btn" id="sendBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Right Side: Dashboard Ticket Card Container -->
+        <section class="right-col">
+            <div class="card-container" id="cardContainer">
+                
+                <!-- Ticket Front Side -->
+                <div class="dashboard-card">
+                    <div class="ticket-header">
+                        <div class="ticket-title">Reservation Ticket</div>
+                        <div class="ticket-subtitle">Real-time LLM Extraction Status</div>
+                    </div>
+                    
+                    <div class="ticket-body">
+                        <!-- Name Row -->
+                        <div class="ticket-row missing" id="row-name">
+                            <div class="row-meta">
+                                <span class="row-label">Guest Name</span>
+                                <span class="status-badge">Missing</span>
+                            </div>
+                            <div class="row-val">Not provided</div>
+                        </div>
+
+                        <!-- Date Row -->
+                        <div class="ticket-row missing" id="row-date">
+                            <div class="row-meta">
+                                <span class="row-label">Reservation Date</span>
+                                <span class="status-badge">Missing</span>
+                            </div>
+                            <div class="row-val">Not provided</div>
+                        </div>
+
+                        <!-- Time Row -->
+                        <div class="ticket-row missing" id="row-time">
+                            <div class="row-meta">
+                                <span class="row-label">Reservation Time</span>
+                                <span class="status-badge">Missing</span>
+                            </div>
+                            <div class="row-val">Not provided</div>
+                        </div>
+
+                        <!-- Guests Row -->
+                        <div class="ticket-row missing" id="row-guests">
+                            <div class="row-meta">
+                                <span class="row-label">Party Size</span>
+                                <span class="status-badge">Missing</span>
+                            </div>
+                            <div class="row-val">Not provided</div>
+                        </div>
+
+                        <!-- Preferences Row -->
+                        <div class="ticket-row missing" id="row-cuisine_pref">
+                            <div class="row-meta">
+                                <span class="row-label">Seating/Food Preferences</span>
+                                <span class="status-badge">Missing</span>
+                            </div>
+                            <div class="row-val">Not provided</div>
+                        </div>
+
+                        <!-- Phone Row -->
+                        <div class="ticket-row missing" id="row-contact_phone">
+                            <div class="row-meta">
+                                <span class="row-label">Contact Phone</span>
+                                <span class="status-badge">Missing</span>
+                            </div>
+                            <div class="row-val">Not provided</div>
+                        </div>
+                    </div>
+
+                    <!-- Extraction Log Visualizer -->
+                    <div class="pipeline-visualizer">
+                        <div class="visualizer-title">
+                            <i class="fa-solid fa-microchip"></i> LangChain Extraction Pipeline
+                        </div>
+                        <div class="pipeline-step" id="step-extract">
+                            <i class="fa-solid fa-circle-notch"></i> 1. LLM JSON Extraction
+                        </div>
+                        <div class="pipeline-step" id="step-parse">
+                            <i class="fa-solid fa-circle-notch"></i> 2. Pydantic Output Parsing
+                        </div>
+                        <div class="pipeline-step" id="step-validate">
+                            <i class="fa-solid fa-circle-notch"></i> 3. Business Rule Validation
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ticket Back Side (Final Receipt) -->
+                <div class="receipt-card">
+                    <div class="receipt-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="receipt-title">Mille Grazie!</div>
+                    <div class="receipt-subtitle">Reservation Confirmed</div>
+                    
+                    <div class="receipt-details">
+                        <div class="receipt-detail-row">
+                            <span class="receipt-detail-label">Guest Name:</span>
+                            <span class="receipt-detail-val" id="receipt-name">-</span>
+                        </div>
+                        <div class="receipt-detail-row">
+                            <span class="receipt-detail-label">Date:</span>
+                            <span class="receipt-detail-val" id="receipt-date">-</span>
+                        </div>
+                        <div class="receipt-detail-row">
+                            <span class="receipt-detail-label">Time:</span>
+                            <span class="receipt-detail-val" id="receipt-time">-</span>
+                        </div>
+                        <div class="receipt-detail-row">
+                            <span class="receipt-detail-label">Guests:</span>
+                            <span class="receipt-detail-val" id="receipt-guests">-</span>
+                        </div>
+                        <div class="receipt-detail-row" id="receipt-pref-row" style="display: none;">
+                            <span class="receipt-detail-label">Preferences:</span>
+                            <span class="receipt-detail-val" id="receipt-pref">-</span>
+                        </div>
+                        <div class="receipt-detail-row" id="receipt-phone-row" style="display: none;">
+                            <span class="receipt-detail-label">Phone:</span>
+                            <span class="receipt-detail-val" id="receipt-phone">-</span>
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <div class="receipt-detail-label" style="font-size: 0.75rem; text-transform: uppercase;">Confirmation Code</div>
+                            <div class="confirmation-code-panel">BI-99217</div>
+                        </div>
+                    </div>
+                    
+                    <div class="buon-appetito">Buon Appetito!</div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // State management
+        let bookingState = {
+            name: null,
+            date: null,
+            time: null,
+            guests: null,
+            cuisine_pref: null,
+            contact_phone: null
+        };
+        
+        let chatHistory = [
+            ["assistant", "Hello! Welcome to Bella Italia. I'd be delighted to help you book a table. Can I start with your name and how many guests will be joining us?"]
+        ];
+
+        let validationErrors = [];
+
+        // DOM elements
+        const chatMessages = document.getElementById("chatMessages");
+        const chatForm = document.getElementById("chatForm");
+        const userInput = document.getElementById("userInput");
+        const typingIndicator = document.getElementById("typingIndicator");
+        const sendBtn = document.getElementById("sendBtn");
+        const cardContainer = document.getElementById("cardContainer");
+        
+        // Pipeline UI steps
+        const stepExtract = document.getElementById("step-extract");
+        const stepParse = document.getElementById("step-parse");
+        const stepValidate = document.getElementById("step-validate");
+
+        // Format dates nicely for humans
+        function formatDateForDisplay(dateStr) {
+            if (!dateStr) return "Not provided";
+            try {
+                const dateObj = new Date(dateStr + "T00:00:00");
+                return dateObj.toLocaleDateString("en-US", { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // Format times nicely for humans
+        function formatTimeForDisplay(timeStr) {
+            if (!timeStr) return "Not provided";
+            try {
+                const [hours, minutes] = timeStr.split(":");
+                const hr = parseInt(hours);
+                const ampm = hr >= 12 ? "PM" : "AM";
+                const displayHr = hr % 12 || 12;
+                return `${displayHr}:${minutes} ${ampm}`;
+            } catch (e) {
+                return timeStr;
+            }
+        }
+
+        // Update a ticket row's appearance based on status
+        function updateTicketRow(field, value, displayVal, errorMsg) {
+            const row = document.getElementById(`row-${field}`);
+            if (!row) return;
+
+            const valDiv = row.querySelector(".row-val");
+            const badge = row.querySelector(".status-badge");
+            
+            // Remove previous classes
+            row.classList.remove("missing", "valid", "invalid");
+            
+            // Clean up existing error tags
+            const existingErr = row.querySelector(".row-error-msg");
+            if (existingErr) existingErr.remove();
+
+            if (value === null || value === undefined) {
+                row.classList.add("missing");
+                valDiv.textContent = "Not provided";
+                badge.textContent = "Missing";
+            } else if (errorMsg) {
+                row.classList.add("invalid");
+                valDiv.textContent = displayVal || value;
+                badge.textContent = "Invalid";
+                
+                // Add error message text
+                const errDiv = document.createElement("div");
+                errDiv.className = "row-error-msg";
+                errDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${errorMsg}`;
+                row.appendChild(errDiv);
+            } else {
+                row.classList.add("valid");
+                valDiv.textContent = displayVal || value;
+                badge.textContent = "Valid";
+            }
+        }
+
+        // Render the entire reservation ticket on the right
+        function renderTicket() {
+            // Find errors per field
+            const getErrorForField = (field) => {
+                const found = validationErrors.find(err => err.toLowerCase().includes(field));
+                return found || null;
+            };
+
+            // Guests field requires check for "guest"
+            const getGuestsError = () => {
+                const found = validationErrors.find(err => err.toLowerCase().includes("guest"));
+                return found || null;
+            };
+
+            // Name
+            updateTicketRow("name", bookingState.name, null, getErrorForField("name"));
+            // Date
+            updateTicketRow("date", bookingState.date, formatDateForDisplay(bookingState.date), getErrorForField("date"));
+            // Time
+            updateTicketRow("time", bookingState.time, formatTimeForDisplay(bookingState.time), getErrorForField("time"));
+            // Guests
+            updateTicketRow("guests", bookingState.guests, bookingState.guests ? `${bookingState.guests} guests` : null, getGuestsError());
+            // Preferences
+            updateTicketRow("cuisine_pref", bookingState.cuisine_pref, null, null);
+            // Phone
+            updateTicketRow("contact_phone", bookingState.contact_phone, null, getErrorForField("phone"));
+        }
+
+        // Render pipeline log progress animations
+        function animatePipeline(status) {
+            // Reset
+            [stepExtract, stepParse, stepValidate].forEach(step => {
+                step.className = "pipeline-step";
+                step.querySelector("i").className = "fa-solid fa-circle-notch";
+            });
+
+            if (status === "start") {
+                stepExtract.classList.add("active");
+                stepExtract.querySelector("i").className = "fa-solid fa-spinner fa-spin";
+            } else if (status === "parsed") {
+                stepExtract.classList.add("success");
+                stepExtract.querySelector("i").className = "fa-solid fa-circle-check";
+                
+                stepParse.classList.add("active");
+                stepParse.querySelector("i").className = "fa-solid fa-spinner fa-spin";
+            } else if (status === "validating") {
+                stepExtract.classList.add("success");
+                stepExtract.querySelector("i").className = "fa-solid fa-circle-check";
+                stepParse.classList.add("success");
+                stepParse.querySelector("i").className = "fa-solid fa-circle-check";
+                
+                stepValidate.classList.add("active");
+                stepValidate.querySelector("i").className = "fa-solid fa-spinner fa-spin";
+            } else if (status === "success") {
+                [stepExtract, stepParse, stepValidate].forEach(step => {
+                    step.classList.add("success");
+                    step.querySelector("i").className = "fa-solid fa-circle-check";
+                });
+            } else if (status === "error") {
+                stepExtract.classList.add("success");
+                stepExtract.querySelector("i").className = "fa-solid fa-circle-check";
+                stepParse.classList.add("success");
+                stepParse.querySelector("i").className = "fa-solid fa-circle-check";
+                
+                stepValidate.classList.add("error");
+                stepValidate.querySelector("i").className = "fa-solid fa-triangle-exclamation";
+            }
+        }
+
+        // Render chat messages list
+        function appendMessage(sender, text) {
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `message ${sender}`;
+            
+            const bubbleDiv = document.createElement("div");
+            bubbleDiv.className = "msg-bubble";
+            bubbleDiv.textContent = text;
+            
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "msg-time";
+            timeSpan.textContent = sender === "assistant" ? "Concierge • Just now" : "You • Just now";
+            
+            msgDiv.appendChild(bubbleDiv);
+            msgDiv.appendChild(timeSpan);
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Check if booking is completed and confirmed
+        function checkBookingConfirmation(userMsg, replyText) {
+            const hasAllData = bookingState.name && bookingState.date && bookingState.time && bookingState.guests && validationErrors.length === 0;
+            if (!hasAllData) return;
+
+            // Check if the user confirmed in their message, or the agent finalized it
+            const confirmPhrases = ["yes", "confirm", "sure", "correct", "perfect", "yep", "that's right"];
+            const isUserConfirming = confirmPhrases.some(phrase => userMsg.toLowerCase().includes(phrase));
+            const isAgentConfirming = replyText.includes("confirmed") || replyText.includes("Confirmation Code") || replyText.includes("BI-99217");
+
+            if (isUserConfirming || isAgentConfirming) {
+                // Populate receipt values
+                document.getElementById("receipt-name").textContent = bookingState.name;
+                document.getElementById("receipt-date").textContent = formatDateForDisplay(bookingState.date);
+                document.getElementById("receipt-time").textContent = formatTimeForDisplay(bookingState.time);
+                document.getElementById("receipt-guests").textContent = `${bookingState.guests} guests`;
+                
+                if (bookingState.cuisine_pref) {
+                    document.getElementById("receipt-pref").textContent = bookingState.cuisine_pref;
+                    document.getElementById("receipt-pref-row").style.display = "flex";
+                }
+                if (bookingState.contact_phone) {
+                    document.getElementById("receipt-phone").textContent = bookingState.contact_phone;
+                    document.getElementById("receipt-phone-row").style.display = "flex";
+                }
+                
+                // Flip card to receipt back side
+                setTimeout(() => {
+                    cardContainer.classList.add("flipped");
+                }, 800);
+            }
+        }
+
+        // Handle chat form submission
+        chatForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // Clear input field
+            userInput.value = "";
+            
+            // Append user message
+            appendMessage("user", text);
+            
+            // Show typing indicator
+            typingIndicator.style.display = "flex";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // Animate pipeline starting
+            animatePipeline("start");
+
+            try {
+                // Call python built-in server API
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        user_message: text,
+                        chat_history: chatHistory,
+                        booking_state: bookingState
+                    })
+                });
+
+                // Simulate progress updates for pipeline animation
+                setTimeout(() => animatePipeline("parsed"), 600);
+                setTimeout(() => animatePipeline("validating"), 1200);
+
+                if (!response.ok) {
+                    throw new Error("Server error or connection refused.");
+                }
+
+                const data = await response.json();
+                
+                // Introduce slight delay for beautiful visuals
+                setTimeout(() => {
+                    // Update state
+                    bookingState = data.booking_state;
+                    chatHistory = data.chat_history;
+                    validationErrors = data.validation_errors;
+
+                    // Render updated ticket
+                    renderTicket();
+
+                    // Pipeline outcome
+                    if (validationErrors.length > 0) {
+                        animatePipeline("error");
+                    } else {
+                        animatePipeline("success");
+                    }
+
+                    // Hide typing indicator and append assistant response
+                    typingIndicator.style.display = "none";
+                    appendMessage("assistant", data.agent_reply);
+                    
+                    // Re-enable form
+                    userInput.disabled = false;
+                    sendBtn.disabled = false;
+                    userInput.focus();
+
+                    // Check if confirmation reached
+                    checkBookingConfirmation(text, data.agent_reply);
+                }, 1800);
+
+            } catch (err) {
+                console.error(err);
+                setTimeout(() => {
+                    animatePipeline("error");
+                    typingIndicator.style.display = "none";
+                    appendMessage("assistant", "Oh, it seems I encountered a connection issue. Please make sure the backend server is running and try again.");
+                    userInput.disabled = false;
+                    sendBtn.disabled = false;
+                }, 1200);
+            }
+        });
+
+        // Initialize state display on load
+        renderTicket();
+    </script>
+</body>
+</html>
